@@ -537,6 +537,9 @@ static void trackOpponentCapture(void) {
 // Scan on-screen clock labels. The clock nearest the bottom (or top when the
 // board is flipped) belongs to us. If we are under 10 seconds, arm flag mode:
 // every auto move fires at ~0.1s instead of the configured delay.
+static UIWindow *gBtnWin = nil;
+static UIWindow *gMenuWin = nil;
+
 static void scanClocks(void) {
     static NSDate *sLast = nil;
     NSDate *now = [NSDate date];
@@ -879,7 +882,6 @@ static void showSettingsMenu(void);
 }
 @end
 
-static UIWindow *gBtnWin = nil;
 static UIButton *gFloatBtn = nil;
 
 static void setupFloatingButton(void) {
@@ -954,7 +956,6 @@ static void setupFloatingButton(void) {
 }
 %end
 
-static UIWindow *gMenuWin = nil;
 
 static UIWindow *menuWin(void) {
     if (gMenuWin) return gMenuWin;
@@ -2320,6 +2321,11 @@ static NSString *buildPGN(void) {
     }
     [pgn appendFormat:@"\n%@\n*\n", body];
     return pgn;
+}
+
+static BOOL isInitialStartFEN(NSString *fen) {
+    if (!fen.length) return NO;
+    return [fen hasPrefix:@"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w "];
 }
 
 static void fetchMove(NSString *fen) {
@@ -3801,14 +3807,14 @@ static void installBoardHooks(void) {
         Dl_info info;
         if (dladdr((void *)&dbg, &info) && info.dli_fbase) {
             unsigned long size = 0;
-            uint8_t *netData = getsectiondata((const struct mach_header *)info.dli_fbase, "__TEXT", "__rodent_net", &size);
+            uint8_t *netData = getsectiondata((const struct mach_header_64 *)info.dli_fbase, "__TEXT", "__rodent_net", &size);
             if (netData && size > 1000) {
                 netPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"rodent_net.bin"];
                 NSData *d = [NSData dataWithBytes:netData length:size];
                 if (![d writeToFile:netPath atomically:YES]) netPath = nil;
             }
             size = 0;
-            uint8_t *bookData = getsectiondata((const struct mach_header *)info.dli_fbase, "__TEXT", "__rodent_book", &size);
+            uint8_t *bookData = getsectiondata((const struct mach_header_64 *)info.dli_fbase, "__TEXT", "__rodent_book", &size);
             if (bookData && size > 100) {
                 bookPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"rodent_book.bin"];
                 NSData *d = [NSData dataWithBytes:bookData length:size];
