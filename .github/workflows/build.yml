@@ -24,6 +24,9 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/nescitus/Rodent-V.git rodent
           cp rodent_bridge.go rodent/rodent_bridge.go
+          # nnue.go references amd64-only AVX2 asm without build tags; add
+          # scalar fallbacks so the engine also builds on arm64
+          cp rodent_avx2_stub.go rodent/rodent_avx2_stub.go
 
       - name: Cross-compile Rodent V for iOS arm64 -> librodent.a
         run: |
