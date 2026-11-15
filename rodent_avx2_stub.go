@@ -113,3 +113,31 @@ func getEvalAVX2_384(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w
 func getEvalAVX2_512(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
 func getEvalAVX2_768(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
 func getEvalAVX2_1024(a0, a1, w0, w1 *int16, sum *int32)  { evalScalar(a0, a1, w0, w1, sum) }
+
+// 3-operand fused kernels (used only for 512-wide nets on amd64);
+// scalar equivalents live in nnue_scalar.go
+func moveAVX2_512_3op(dst0, src0, dst1, src1, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar3(dst0, src0, dst1, src1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func captureAVX2_512_3op(dst0, src0, dst1, src1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar3(dst0, src0, dst1, src1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func castleAVX2_512_3op(dst0, src0, dst1, src1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar3(dst0, src0, dst1, src1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+
+// Multilayer eval kernel: unreachable on non-amd64 (hasAVX2 is false
+// there and both call sites are guarded by it); stub for the compiler.
+func getEvalMultilayerAVX2(
+	a0, a1 *int16,
+	l1w *int8,
+	l1b *float32,
+	l2w *float32,
+	l2b *float32,
+	l3w *float32,
+	l3b float32,
+	scale float32,
+	out *int32,
+) {
+	*out = 0
+}
