@@ -9,42 +9,107 @@
 //  Upstream never builds on other architectures, so the references
 //  were never noticed. On non-amd64 (e.g. iOS arm64) hasAVX2 is
 //  always false, so these fallbacks are never called at runtime —
-//  they only need to exist for the compiler.
+//  they only need to exist for the compiler. Each one simply
+//  delegates to the equivalent scalar routine in nnue_scalar.go.
+//
+//  Families covered:
+//      addSingleAVX2_N -> addSingleScalar
+//      subSingleAVX2_N -> subSingleScalar
+//      moveAVX2_N      -> moveScalar
+//      captureAVX2_N   -> captureScalar
+//      castleAVX2_N    -> castleScalar
+//      getEvalAVX2_N   -> evalScalar
 //
 // ================================================================
 
 package main
 
-import "unsafe"
+func addSingleAVX2_64(a, w *int16)    { addSingleScalar(a, w) }
+func addSingleAVX2_128(a, w *int16)   { addSingleScalar(a, w) }
+func addSingleAVX2_256(a, w *int16)   { addSingleScalar(a, w) }
+func addSingleAVX2_384(a, w *int16)   { addSingleScalar(a, w) }
+func addSingleAVX2_512(a, w *int16)   { addSingleScalar(a, w) }
+func addSingleAVX2_768(a, w *int16)   { addSingleScalar(a, w) }
+func addSingleAVX2_1024(a, w *int16)  { addSingleScalar(a, w) }
 
-func avx2StubAdd(a, w *int16, n int) {
-	aa := unsafe.Slice(a, n)
-	ww := unsafe.Slice(w, n)
-	for i := 0; i < n; i++ {
-		aa[i] += ww[i]
-	}
+func subSingleAVX2_64(a, w *int16)    { subSingleScalar(a, w) }
+func subSingleAVX2_128(a, w *int16)   { subSingleScalar(a, w) }
+func subSingleAVX2_256(a, w *int16)   { subSingleScalar(a, w) }
+func subSingleAVX2_384(a, w *int16)   { subSingleScalar(a, w) }
+func subSingleAVX2_512(a, w *int16)   { subSingleScalar(a, w) }
+func subSingleAVX2_768(a, w *int16)   { subSingleScalar(a, w) }
+func subSingleAVX2_1024(a, w *int16)  { subSingleScalar(a, w) }
+
+func moveAVX2_64(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_128(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_256(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_384(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_512(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_768(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
+}
+func moveAVX2_1024(a0, a1 *int16, wFrom0, wTo0, wFrom1, wTo1 *int16) {
+	moveScalar(a0, a1, wFrom0, wTo0, wFrom1, wTo1)
 }
 
-func avx2StubSub(a, w *int16, n int) {
-	aa := unsafe.Slice(a, n)
-	ww := unsafe.Slice(w, n)
-	for i := 0; i < n; i++ {
-		aa[i] -= ww[i]
-	}
+func captureAVX2_64(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_128(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_256(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_384(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_512(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_768(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
+}
+func captureAVX2_1024(a0, a1 *int16, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1 *int16) {
+	captureScalar(a0, a1, wTo0, wFrom0, wCap0, wTo1, wFrom1, wCap1)
 }
 
-func addSingleAVX2_64(a, w *int16)    { avx2StubAdd(a, w, 64) }
-func addSingleAVX2_128(a, w *int16)   { avx2StubAdd(a, w, 128) }
-func addSingleAVX2_256(a, w *int16)   { avx2StubAdd(a, w, 256) }
-func addSingleAVX2_384(a, w *int16)   { avx2StubAdd(a, w, 384) }
-func addSingleAVX2_512(a, w *int16)   { avx2StubAdd(a, w, 512) }
-func addSingleAVX2_768(a, w *int16)   { avx2StubAdd(a, w, 768) }
-func addSingleAVX2_1024(a, w *int16)  { avx2StubAdd(a, w, 1024) }
+func castleAVX2_64(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_128(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_256(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_384(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_512(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_768(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
+func castleAVX2_1024(a0, a1 *int16, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1 *int16) {
+	castleScalar(a0, a1, wKFrom0, wKTo0, wRFrom0, wRTo0, wKFrom1, wKTo1, wRFrom1, wRTo1)
+}
 
-func subSingleAVX2_64(a, w *int16)    { avx2StubSub(a, w, 64) }
-func subSingleAVX2_128(a, w *int16)   { avx2StubSub(a, w, 128) }
-func subSingleAVX2_256(a, w *int16)   { avx2StubSub(a, w, 256) }
-func subSingleAVX2_384(a, w *int16)   { avx2StubSub(a, w, 384) }
-func subSingleAVX2_512(a, w *int16)   { avx2StubSub(a, w, 512) }
-func subSingleAVX2_768(a, w *int16)   { avx2StubSub(a, w, 768) }
-func subSingleAVX2_1024(a, w *int16)  { avx2StubSub(a, w, 1024) }
+func getEvalAVX2_64(a0, a1, w0, w1 *int16, sum *int32)    { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_128(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_256(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_384(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_512(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_768(a0, a1, w0, w1 *int16, sum *int32)   { evalScalar(a0, a1, w0, w1, sum) }
+func getEvalAVX2_1024(a0, a1, w0, w1 *int16, sum *int32)  { evalScalar(a0, a1, w0, w1, sum) }
