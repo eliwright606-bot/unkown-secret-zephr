@@ -1,0 +1,22 @@
+# Build output
+packages/
+.theos/
+obj/
+*.deb
+*.zip
+
+# Local artifact extraction dirs
+artifact/
+artifact_*/
+deb_data/
+deb_extract/
+Chess-tweak-deb/
+*.dylib
+
+# Scratch
+Tweak.x.m
+rodent/
+rodent_net.bin
+rodent_book.bin
+librodent.a
+librodent.h

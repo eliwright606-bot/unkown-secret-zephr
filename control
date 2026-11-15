@@ -1,0 +1,12 @@
+Package: com.chess.assistant
+Name: Chess Assistant
+Depends: mobilesubstrate
+Version: 3.0.0
+Architecture: iphoneos-arm64
+Description: On-device chess move assistant for Chess.com running the Rodent V
+             engine with the Nimzoid personality. Depth-based strength, instant
+             mates, auto recapture, premove and flag-fast moves.
+Maintainer: epic
+Author: epic
+Section: Tweaks
+{ Filter = { Bundles = ( "com.chess.iphone", "com.chess.Chess-Online" ); }; }
