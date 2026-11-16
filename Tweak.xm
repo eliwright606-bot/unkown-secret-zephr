@@ -1446,7 +1446,6 @@ static void clampGeloToActiveRange(void) {
 
         // ---- ENGINE ----
         [_stack addArrangedSubview:[self sectionLabel:@"Engine"]];
-        int eloCnt = 0; const NSInteger *eloLvls = activeEloLevels(&eloCnt);
 
         _eloValue = [self lbl:[NSString stringWithFormat:@"%ld", (long)gElo] size:16 weight:UIFontWeightSemibold color:CH_ACCENT];
         NSString *tierText = eloTierName(gElo);
@@ -2332,6 +2331,11 @@ static int humanizedPickIndex(const EngineLine *lines, int count, int elo) {
     double acc = 0;
     for (int i = 0; i < n; i++) { acc += w[i]; if (w[i] > 0 && r <= acc) return i; }
     return 0;
+}
+
+static BOOL isInitialStartFEN(NSString *fen) {
+    if (!fen.length) return NO;
+    return [fen hasPrefix:@"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w "];
 }
 
 static void fetchMove(NSString *fen) {
