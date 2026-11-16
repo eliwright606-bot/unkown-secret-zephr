@@ -17,7 +17,7 @@
 // this file is derived from.
 
 #include "uci_interpreter/uci_interpreter.h"
-#include "engine/engine.h"
+#include "engine.h"
 
 static std::atomic<bool> gEngineReady{false};
 
