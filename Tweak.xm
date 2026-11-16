@@ -1116,11 +1116,6 @@ static NSInteger activeEloForIndex(int i) {
     if (i < 0) i = 0; if (i >= c) i = c - 1;
     return l[i];
 }
-static void clampGeloToActiveRange(void) {
-    int c = 0; const NSInteger *l = activeEloLevels(&c);
-    if (gElo < l[0]) gElo = l[0];
-    if (gElo > l[c-1]) gElo = l[c-1];
-}
 
 @interface CHSettingsPanel : UIView {
     UIView      *_card;
