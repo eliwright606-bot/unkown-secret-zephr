@@ -42,7 +42,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download latest --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir . --clobber
-          mv com.chess.assistant_*.deb chess-assistant.deb
+          DEB=$(ls -t com.chess.assistant_*.deb | head -1)
+          mv "$DEB" chess-assistant.deb
           ls -la chess-assistant.deb
 
       - name: Install cyan
