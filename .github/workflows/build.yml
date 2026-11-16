@@ -1,0 +1,58 @@
+name: Build Chess Assistant
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone Midnight engine
+        run: git clone --depth 1 https://github.com/archishou/MidnightChessEngine.git midnight
+
+      - name: Compile Midnight for iOS arm64 -> libmidnight.a
+        run: |
+          SDK=$(xcrun -sdk iphoneos --show-sdk-path)
+          CLANG=$(xcrun -sdk iphoneos --find clang)
+          mkdir -p "$GITHUB_WORKSPACE/midnightobj" "$GITHUB_WORKSPACE/midnight/lib"
+          cd "$GITHUB_WORKSPACE/midnight"
+          # NNUE net is embedded via INCBIN ("src/evaluation/netM006.nnue"),
+          # so compile from the repo root. NEON is used automatically on arm64.
+          for f in $(find src -name '*.cpp' ! -name 'tuner.cpp'); do
+            echo "compiling $f"
+            "$CLANG" -std=c++20 -O2 -DNDEBUG -pthread               -arch arm64 -isysroot "$SDK" -miphoneos-version-min=15.0               -Isrc -w -c "$f" -o "$GITHUB_WORKSPACE/midnightobj/$(echo $f | tr '/' '_').o" || exit 1
+          done
+          cd "$GITHUB_WORKSPACE"
+          $(xcrun -sdk iphoneos --find ar) rcs midnight/lib/libmidnight.a midnightobj/*.o
+          file midnight/lib/libmidnight.a
+          echo "libmidnight.a: $(du -h midnight/lib/libmidnight.a | cut -f1)"
+
+      - name: Setup Theos
+        uses: beerpiss/theos-action@v1
+        with:
+          cache: true
+
+      - name: Build .deb
+        run: make package FINALPACKAGE=1
+        env:
+          THEOS: ${{ github.workspace }}/theos
+
+      - name: Publish .deb as release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DEB=$(ls packages/*.deb | head -1)
+          echo "built: $DEB"
+          # keep the rolling release, just refresh the deb asset
+          # (never delete the release — it may hold user-uploaded assets like the decrypted IPA)
+          gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||             gh release create latest --repo "$GITHUB_REPOSITORY"               --title "Chess Assistant (rolling build)"               --notes "Rolling dev build. Midnight engine (native NEON NNUE)."               --prerelease
+          gh release upload latest "$DEB" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload v5.0.0 "$DEB" --repo "$GITHUB_REPOSITORY" --clobber || true
