@@ -1452,6 +1452,7 @@ static void clampGeloToActiveRange(void) {
         _eloTier  = [self lbl:tierText size:12 weight:UIFontWeightRegular color:[UIColor colorWithWhite:0.6 alpha:1]];
         [_eloValue setContentHuggingPriority:1000 forAxis:UILayoutConstraintAxisHorizontal];
         UISlider *elo = [[UISlider alloc] init];
+        int eloCnt = 0; activeEloLevels(&eloCnt);
         elo.minimumValue = 0; elo.maximumValue = eloCnt - 1; elo.value = activeEloNearestIndex(gElo);
         elo.minimumTrackTintColor = CH_ACCENT;
         [elo addTarget:self action:@selector(eloSlide:) forControlEvents:UIControlEventValueChanged];
