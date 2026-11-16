@@ -226,19 +226,119 @@ extern "C" void EngineGo(const char *fen, int depth, int elo, int multipv, Engin
 }
 
 // Midnight is a black-box UCI engine here, so legality is checked with our
-// own tiny movegen-compatible validator: parse the FEN, reject positions
-// where the side not to move is already in check.
+// own small validator: parse the FEN and reject positions where the side not
+// to move is already in check (the classic illegal-position test).
+namespace {
+
+struct MiniPos {
+    signed char pc[64];   // 0 empty; +1..6 = PNBRQK white; -1..-6 black
+    int side;             // 0 white, 1 black
+
+    bool load(const char *fen) {
+        memset(pc, 0, sizeof(pc));
+        side = 0;
+        const char *p = fen;
+        int sq = 56;
+        int stage = 0;
+        while (*p) {
+            char c = *p++;
+            if (c == ' ') { stage++; if (stage > 1) break; continue; }
+            if (stage == 0) {
+                if (c == '/') { sq -= 16; continue; }
+                if (c >= '1' && c <= '8') { sq += (c - '0'); continue; }
+                int t = 0, sgn = 1;
+                switch (c) {
+                    case 'P': t = 1; break; case 'p': t = 1; sgn = -1; break;
+                    case 'N': t = 2; break; case 'n': t = 2; sgn = -1; break;
+                    case 'B': t = 3; break; case 'b': t = 3; sgn = -1; break;
+                    case 'R': t = 4; break; case 'r': t = 4; sgn = -1; break;
+                    case 'Q': t = 5; break; case 'q': t = 5; sgn = -1; break;
+                    case 'K': t = 6; break; case 'k': t = 6; sgn = -1; break;
+                    default: return false;
+                }
+                if (sq < 0 || sq > 63) return false;
+                pc[sq++] = (signed char)(t * sgn);
+            } else if (stage == 1) {
+                if (c == 'w') side = 0;
+                else if (c == 'b') side = 1;
+                else return false;
+            }
+        }
+        int wk = 0, bk = 0;
+        for (int i = 0; i < 64; i++) {
+            if (pc[i] == 6) wk++;
+            if (pc[i] == -6) bk++;
+        }
+        return wk == 1 && bk == 1;
+    }
+
+    int kingSq(int color) const {
+        for (int i = 0; i < 64; i++)
+            if (pc[i] == (color == 0 ? 6 : -6)) return i;
+        return -1;
+    }
+
+    bool attacked(int sq, int byColor) const {
+        static const int kn[8][2] = {{1,2},{2,1},{2,-1},{1,-2},{-1,-2},{-2,-1},{-2,1},{-1,2}};
+        static const int kg[8][2] = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
+        static const int bd[4][2] = {{1,1},{1,-1},{-1,1},{-1,-1}};
+        static const int rd[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+        int r = sq / 8, f = sq % 8;
+        int sgn = (byColor == 0) ? 1 : -1;
+        // pawns
+        int pr = r + (byColor == 0 ? -1 : 1);
+        if (pr >= 0 && pr < 8) {
+            if (f > 0 && pc[pr * 8 + f - 1] == sgn * 1) return true;
+            if (f < 7 && pc[pr * 8 + f + 1] == sgn * 1) return true;
+        }
+        // knights
+        for (auto &d : kn) {
+            int rr = r + d[0], ff = f + d[1];
+            if (rr >= 0 && rr < 8 && ff >= 0 && ff < 8 && pc[rr * 8 + ff] == sgn * 2) return true;
+        }
+        // king
+        for (auto &d : kg) {
+            int rr = r + d[0], ff = f + d[1];
+            if (rr >= 0 && rr < 8 && ff >= 0 && ff < 8 && pc[rr * 8 + ff] == sgn * 6) return true;
+        }
+        // sliders
+        for (auto &d : bd) {
+            int rr = r + d[0], ff = f + d[1];
+            while (rr >= 0 && rr < 8 && ff >= 0 && ff < 8) {
+                int v = pc[rr * 8 + ff];
+                if (v != 0) {
+                    if (v == sgn * 3 || v == sgn * 5) return true;
+                    break;
+                }
+                rr += d[0]; ff += d[1];
+            }
+        }
+        for (auto &d : rd) {
+            int rr = r + d[0], ff = f + d[1];
+            while (rr >= 0 && rr < 8 && ff >= 0 && ff < 8) {
+                int v = pc[rr * 8 + ff];
+                if (v != 0) {
+                    if (v == sgn * 4 || v == sgn * 5) return true;
+                    break;
+                }
+                rr += d[0]; ff += d[1];
+            }
+        }
+        return false;
+    }
+};
+
+} // namespace
+
 extern "C" bool EngineFenLegal(const char *fen) {
     if (!fen) return false;
-    // cheap structural validation: both kings present, exactly one side to move
-    int wk = 0, bk = 0;
-    const char *p = strchr(fen, ' ');
-    if (!p) return false;
-    for (const char *q = fen; q != p; q++) {
-        if (*q == 'K') wk++;
-        else if (*q == 'k') bk++;
-    }
-    return wk == 1 && bk == 1;
+    MiniPos p;
+    if (!p.load(fen)) return false;
+    // the side NOT to move must not be in check
+    int other = 1 - p.side;
+    int ks = p.kingSq(other);
+    if (ks < 0) return false;
+    return !p.attacked(ks, p.side);
 }
 
 extern "C" int EngineLegalMoves(const char *fen, char *out, int maxMoves) {
